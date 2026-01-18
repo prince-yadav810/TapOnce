@@ -19,6 +19,9 @@ export interface KanbanOrder {
     salePrice: number;
     createdAt: string;
     designName?: string;
+    agentId?: string;
+    agentName?: string;
+    isDirectSale?: boolean;
 }
 
 export interface KanbanColumn {

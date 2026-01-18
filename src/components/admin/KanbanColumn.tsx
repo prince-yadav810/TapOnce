@@ -1,19 +1,25 @@
 'use client';
 
+/**
+ * @file Kanban Column Component
+ * @description Droppable column for the Kanban board
+ * 
+ * @owner Dev 1
+ */
+
 import { SortableContext, useSortable } from '@dnd-kit/sortable';
 import { useDroppable } from '@dnd-kit/core';
-import { CSS } from '@dnd-kit/utilities';
 import { useMemo } from 'react';
 import { KanbanColumn as IKanbanColumn, KanbanOrder } from '@/types/kanban';
 import { OrderCard } from './OrderCard';
-import { cn } from '@/lib/utils';
 
 interface KanbanColumnProps {
     column: IKanbanColumn;
     orders: KanbanOrder[];
+    onOrderClick?: (order: KanbanOrder) => void;
 }
 
-export function KanbanColumn({ column, orders }: KanbanColumnProps) {
+export function KanbanColumn({ column, orders, onOrderClick }: KanbanColumnProps) {
     const ordersIds = useMemo(() => orders.map((order) => order.id), [orders]);
 
     const { setNodeRef } = useDroppable({
@@ -45,7 +51,11 @@ export function KanbanColumn({ column, orders }: KanbanColumnProps) {
             <div className="flex-1 overflow-y-auto min-h-[100px] pr-1 scrollbar-thin scrollbar-thumb-secondary">
                 <SortableContext items={ordersIds}>
                     {orders.map((order) => (
-                        <OrderCard key={order.id} order={order} />
+                        <OrderCard
+                            key={order.id}
+                            order={order}
+                            onClick={onOrderClick}
+                        />
                     ))}
                 </SortableContext>
             </div>
