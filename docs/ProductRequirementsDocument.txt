@@ -1,0 +1,1854 @@
+# Product Requirements Document (PRD)
+## NFC Smart Card Platform
+
+**Version:** 1.0  
+**Date:** January 17, 2026  
+**Author:** Product Architecture Team  
+**Status:** Draft for Development
+
+---
+
+## 1. Executive Summary
+
+### 1.1 Product Overview
+The NFC Smart Card Platform is a digital business card solution that bridges physical and digital networking. Customers receive a physical PVC NFC card (NTAG216 chip) that, when tapped with a smartphone, opens their personalized digital profile in a mobile browser. The platform enables customers to update their profile information in real-time without needing to reprint physical cards.
+
+### 1.2 Business Model
+- **Target Market:** India (initially Indore and Mumbai)
+- **Customer Segment:** B2C - Individual professionals, entrepreneurs, corporate employees
+- **Revenue Streams:**
+  - Direct card sales via website
+  - Agent-driven sales with commission structure
+  - Potential future: Premium subscriptions for advanced features
+
+### 1.3 Success Metrics
+- Primary: Total cards sold per month
+- Secondary: Agent recruitment rate, customer satisfaction, average order value
+- Operational: Average fulfillment time (order to delivery)
+
+---
+
+## 2. Product Vision & Goals
+
+### 2.1 Vision Statement
+To revolutionize professional networking in India by making digital business cards accessible, affordable, and instantly updatable through NFC technology.
+
+### 2.2 Product Goals
+1. **Simplicity:** Enable non-technical users to manage their digital presence without training
+2. **Speed:** Deliver cards within 7 days from order to customer delivery
+3. **Scalability:** Support a distributed sales force through agent management system
+4. **Reliability:** Ensure 99.9% uptime for tap view pages (critical for first impressions)
+
+### 2.3 Out of Scope (For MVP)
+- Mobile applications (iOS/Android native apps)
+- Analytics/tap tracking for customers
+- Multi-card management per customer
+- International markets outside India
+- Integration with third-party CRM systems
+
+---
+
+## 3. User Roles & Personas
+
+### 3.1 Admin (The Founder)
+
+**Primary User:** Business owner(s) managing operations
+
+**Key Responsibilities:**
+- Order approval and fulfillment workflow
+- Agent management (creation, commission settings, payouts)
+- Customer account management
+- Card catalog management (designs, pricing)
+- Financial tracking (revenue, expenses, commissions)
+- Quality control (photo review, data validation)
+
+**Pain Points:**
+- Manual order processing bottlenecks
+- Tracking multiple orders across printing pipeline
+- Agent payout management overhead
+- Ensuring data quality before card printing
+
+**Success Criteria:**
+- Process 20+ orders per day efficiently
+- Zero errors in card printing (correct names, photos, URLs)
+- Clear visibility into pending payouts and revenue
+
+---
+
+### 3.2 Customer (Cardholder)
+
+**Primary User:** Professional receiving and using the NFC card
+
+**Demographics:**
+- Age: 25-45 years
+- Occupation: Entrepreneurs, sales professionals, consultants, corporate employees
+- Tech Savviness: Moderate (comfortable with WhatsApp, basic web forms)
+- Location: Urban India (Tier 1 & 2 cities)
+
+**User Journey:**
+1. Orders card (via agent or website)
+2. Receives card with login credentials
+3. Logs into dashboard to edit profile
+4. Shares card at networking events/meetings
+5. Recipients tap card and view profile
+
+**Pain Points:**
+- Forgetting to update contact details when changing jobs/companies
+- Running out of traditional business cards
+- Typos on printed cards requiring expensive reprints
+- Difficulty sharing contact info in digital-first meetings
+
+**Success Criteria:**
+- Complete profile setup within 10 minutes of receiving card
+- Update profile information at least once in first 3 months
+- Receive positive feedback from card recipients
+
+**Key Features Needed:**
+- Simple, mobile-friendly edit dashboard
+- Preview before saving changes
+- Fast-loading public tap view page (<2 seconds)
+- "Save to Contact" button that works on all devices
+
+---
+
+### 3.3 Marketing Agent (Sales Force)
+
+**Primary User:** Independent sales representatives earning commission
+
+**Demographics:**
+- Age: 22-40 years
+- Background: Sales experience, local network in target cities
+- Motivation: Side income, entrepreneurship opportunity
+- Tech Savviness: Basic to moderate
+
+**User Journey:**
+1. Gets recruited (by admin or existing agent)
+2. Receives login credentials
+3. Meets potential customers in-person
+4. Shows card samples and explains product
+5. Negotiates price, collects customer details
+6. Submits order via agent dashboard
+7. Tracks order status
+8. Earns commission upon customer payment
+9. Requests payout periodically
+10. Potentially recruits sub-agents for override income
+
+**Pain Points:**
+- Need to track multiple pending orders
+- Uncertainty about commission earnings
+- Delay in receiving payouts
+- Difficulty explaining NFC technology to customers
+
+**Success Criteria:**
+- Submit first order within 7 days of joining
+- Achieve 5+ card sales per month (part-time agent)
+- Achieve 20+ card sales per month (full-time agent)
+- Recruit at least 1 sub-agent within 3 months
+
+**Key Features Needed:**
+- Mobile-responsive dashboard (field access)
+- Clear commission breakdown per order
+- Real-time order status visibility
+- Card catalog with design previews
+- Training resources to pitch product
+
+---
+
+### 3.4 Public Viewer (Card Recipient)
+
+**Primary User:** Anyone who taps the NFC card
+
+**Demographics:**
+- Any age, any tech level
+- May or may not understand NFC technology
+- Using any smartphone with NFC capability (or QR code fallback)
+
+**User Journey:**
+1. Receives physical card from customer at meeting/event
+2. Taps card with smartphone (or scans QR code)
+3. Browser opens automatically to tap view page
+4. Views customer's profile
+5. Optionally saves contact to phone
+6. Optionally downloads portfolio (PDF/image)
+
+**Pain Points:**
+- Unfamiliar with NFC tapping process
+- Slow-loading pages (poor mobile networks in India)
+- Cluttered or confusing profile layouts
+- Difficulty saving contact on certain devices
+
+**Success Criteria:**
+- Successfully open tap view page in <3 seconds
+- Save contact to phone with <2 taps
+- Understand whose card they tapped (clear name/photo)
+
+**Key Features Needed:**
+- Lightning-fast page load (optimized for 3G/4G)
+- Clear visual hierarchy (photo, name, contact info)
+- One-tap "Save Contact" button (.vcf download)
+- "Get Your Card" CTA (marketing opportunity)
+
+---
+
+## 4. System Architecture Overview
+
+### 4.1 Technology Stack Principles
+- **Mobile-First Design:** All interfaces optimized for smartphone access
+- **Progressive Web App (PWA):** Fast, app-like experience without app store friction
+- **Minimal Dependencies:** Avoid heavy libraries to ensure fast load times
+- **Offline-First for Public Pages:** Aggressive caching for tap view pages
+
+### 4.2 Core Components
+1. **Admin Panel:** Web dashboard for order management and operations
+2. **Agent Dashboard:** Web dashboard for order submission and tracking
+3. **Customer Dashboard:** Web dashboard for profile editing
+4. **Public Tap View:** Ultra-fast, publicly accessible profile pages
+5. **Landing Page:** Marketing website for direct customer acquisition
+6. **Database:** Centralized data storage for all entities
+7. **Storage System:** Image hosting for customer photos, card designs
+
+### 4.3 External Integrations
+- **Wekonnect (Printing Partner):** Manual WhatsApp integration for order transmission
+- **Email Service:** Automated transactional emails (credentials, confirmations)
+- **WhatsApp Business API (Future):** Automated notifications to customers/agents
+- **Payment Gateway (Future):** Razorpay/Paytm for online payments
+
+---
+
+## 5. Technical Constraints
+
+### 5.1 NFC Hardware Limitations
+
+**NTAG216 Chip Specifications:**
+- **Total Memory:** 888 bytes
+- **Usable Memory (for URL):** ~868 bytes
+- **Data Structure:** NDEF (NFC Data Exchange Format) message containing a URL record
+
+**URL Length Constraints:**
+- Maximum URL length: ~850 characters (theoretical)
+- Practical limit: Keep URLs under 100 characters for reliability
+- **Recommended URL Format:** `yourplatform.com/[username]` (30-50 chars typical)
+
+**Implications for Platform:**
+- URLs must be SHORT (cannot store full profile data on chip)
+- URL is READ-ONLY after writing (cannot be updated remotely)
+- One URL per card (cannot store multiple records)
+- Must use web-based profile (chip only stores pointer to web page)
+
+**URL Strategy:**
+```
+Format: https://yourplatform.com/[slug]
+
+Examples:
+- yourplatform.com/rahul-verma (personal name)
+- yourplatform.com/tech-solutions (company name)
+- yourplatform.com/c/ABC123 (fallback: Card ID)
+
+Length: 30-60 characters typical
+```
+
+### 5.2 Mobile Network Constraints (India)
+
+**Target Performance:**
+- Page load on 3G: <3 seconds
+- Page load on 4G: <1.5 seconds
+- Page load on WiFi: <1 second
+
+**Optimization Requirements:**
+- Compress all images (WebP format, <100KB per image)
+- Minify HTML/CSS/JS
+- Use CDN for static assets
+- Implement aggressive browser caching
+- Lazy-load non-critical content
+
+### 5.3 Browser Compatibility
+
+**Must Support:**
+- Chrome (Android) - 80%+ of taps expected
+- Safari (iOS) - 15%+ of taps expected
+- Samsung Internet (Samsung devices)
+- Firefox, Edge (minimal but possible)
+
+**Compatibility Requirements:**
+- NFC tap must work on all Android 5.0+ devices
+- iOS 13+ (iPhone XR and newer for background NFC reading)
+- Fallback: QR code for devices without NFC
+
+### 5.4 Device Constraints
+
+**NFC Writing Hardware (Admin Side):**
+- USB NFC writer device (e.g., ACR122U, PN532)
+- Manual writing process: Admin copies URL → writes to card using NFC writer software
+- Batch writing not feasible (manual process per card)
+
+**Customer Devices (Tap Side):**
+- No app installation required (browser-based experience)
+- Works on locked screen (Android) or requires app open (iOS 13-14) or background tap (iOS 14.5+)
+
+---
+
+## 6. MVP Features (Must-Have)
+
+### 6.1 Admin Panel
+
+#### 6.1.1 Order Management (Kanban Board)
+**Feature:** Visual drag-and-drop order tracking across fulfillment pipeline
+
+**Columns:**
+1. Pending Approval
+2. Approved
+3. Printing
+4. Printed
+5. Ready to Ship
+6. Shipped
+7. Delivered
+8. Paid
+
+**Each Order Card Shows:**
+- Order ID
+- Customer name
+- Card type
+- Sale price
+- Agent (or "Direct" if website order)
+- Time since submission
+
+**Actions:**
+- Click order → View full details modal
+- Drag order → Update status
+- Bulk select (future enhancement)
+
+**Order Details Modal Contents:**
+- Customer info (name, company, phone, email, WhatsApp)
+- Card design selected + preview
+- Custom text (Line 1, Line 2)
+- Customer photo (preview with quality check)
+- Pricing breakdown (MSP, sale price, commission)
+- Payment status
+- Portfolio URL generation (choose name vs. company, or custom)
+- Admin notes (private, internal)
+- Actions: Approve, Reject, Request Changes
+
+**Approval Flow:**
+1. Admin reviews order details
+2. Selects portfolio URL format
+3. Clicks "Approve & Send to Wekonnect"
+4. System auto-creates customer account
+5. System auto-creates portfolio page (draft)
+6. System sends credentials to customer (email/WhatsApp)
+7. WhatsApp Web opens with pre-filled message to Wekonnect (order details + attachments)
+
+**Rejection Flow:**
+1. Admin clicks "Reject"
+2. Enters rejection reason (mandatory)
+3. System notifies agent
+4. Order marked as "Rejected" (stays in system for transparency)
+
+#### 6.1.2 Customer Account Auto-Creation
+**Trigger:** When admin approves an order
+
+**Automated Actions:**
+1. Generate username (email or phone)
+2. Generate secure password (e.g., `Firstname@Year2026`)
+3. Create portfolio URL based on admin's selection
+4. Validate URL uniqueness (append `-2`, `-3` if conflict)
+5. Create portfolio page (draft status until NFC written)
+6. Send credentials via email
+7. Send credentials via manual WhatsApp message (admin copies from system)
+
+**Customer Credentials Format:**
+```
+Subject: Your Smart Card Login Details
+
+Hi [Customer Name],
+
+Your smart card order (#12050) has been confirmed!
+
+Your Profile URL: yourplatform.com/tech-solutions
+Username: rahul.verma@techsolutions.in
+Password: Rahul@Tech2026
+
+Log in to edit your profile: yourplatform.com/login
+
+Your card will be delivered within 7 days.
+
+Questions? Reply to this email or WhatsApp us at [number].
+
+Best,
+[Your Brand] Team
+```
+
+#### 6.1.3 Wekonnect Integration (WhatsApp)
+**Feature:** One-click order transmission to printing partner
+
+**Flow:**
+1. Admin clicks "Approve & Send to Wekonnect" button
+2. System generates order message with:
+   - Order ID
+   - Customer name, company
+   - Card design name
+   - Custom text (Line 1, Line 2)
+   - Special instructions (if any)
+   - Delivery address (admin's Indore location)
+   - Quantity (1 card)
+3. System attaches files:
+   - Card design template PDF (from catalog)
+   - Customer photo JPG/PNG
+4. WhatsApp Web opens in new tab with message pre-filled
+5. Admin reviews message and clicks Send
+6. Admin manually updates order status to "Printing" after Wekonnect confirms
+
+**Message Template:**
+```
+──────────────────────────
+NEW ORDER #12050
+──────────────────────────
+
+Customer: Rahul Verma
+Company: Tech Solutions Pvt Ltd
+
+Card Design: Vertical Blue Premium
+
+Custom Text:
+Line 1: RAHUL VERMA
+Line 2: Founder & CEO
+
+Special Instructions:
+Customer needs card by 25-Jan for conference
+
+Delivery Address:
+[Your Indore Address]
+
+Quantity: 1 card
+
+──────────────────────────
+
+[Attached: vertical_blue_premium_template.pdf]
+[Attached: rahul_verma_photo.jpg]
+
+Please confirm printing timeline and estimated delivery date.
+```
+
+#### 6.1.4 NFC Writing Workflow
+**Feature:** Clear display of portfolio URL for manual NFC writing
+
+**Flow:**
+1. Order reaches "Printed" status (card received from Wekonnect)
+2. Admin clicks on order card in Kanban
+3. Order details show prominent "Portfolio URL" section:
+   ```
+   Portfolio URL (Copy to write to NFC):
+   yourplatform.com/tech-solutions
+   [📋 Copy URL]
+   ```
+4. Admin copies URL
+5. Admin uses external NFC writer software to write URL to card
+6. Admin packages card
+7. Admin drags order to "Ready to Ship" column
+8. Admin adds tracking note (optional): "NFC written, packaged, ready for courier pickup"
+
+#### 6.1.5 Customer Management
+**Feature:** Searchable, filterable list of all customers
+
+**Table Columns:**
+- Customer Name
+- Company
+- Phone
+- Email
+- Card Type
+- Status (Active, Pending, Suspended)
+- Agent (or "Direct")
+- Portfolio URL
+- Order Date
+- Actions (View, Edit, Edit Public Page, Preview)
+
+**Filters:**
+- Status: Active / Pending / Suspended / All
+- Card Type: All designs + "All Types"
+- Agent: Dropdown of all agents + "Direct" + "All"
+- Has Website: Yes / No / All
+- Has LinkedIn: Yes / No / All
+- Has WhatsApp: Yes / No / All
+- Payment Status: Paid / Pending / All
+- Order Date Range: From [date] To [date]
+
+**Search:** Real-time search by name, company, phone, email, order ID
+
+**Actions:**
+- **View:** Full customer profile + order history + contact info
+- **Edit:** Change customer email, phone, password (admin reset only)
+- **Edit Public Page:** Directly modify customer's tap view content (if customer requests help)
+- **Preview:** See live tap view page as it appears to public
+- **Deactivate:** Disable card (URL shows "Card deactivated" message)
+- **Delete:** Permanently remove customer (confirmation required)
+
+#### 6.1.6 Agent Management
+**Feature:** Create, manage, and monitor marketing agents
+
+**Agent List View:**
+- Agent Name
+- Referral Code (e.g., PRINCE10)
+- Total Sales (lifetime card count)
+- Total Revenue Generated
+- Commission Owed (current balance)
+- Joined Date
+- Status (Active / Inactive)
+- Actions (View, Edit, Deactivate)
+
+**Create Agent Flow:**
+1. Click "Create Agent" button
+2. Fill form:
+   - Personal Info: Name, Phone, Email, City
+   - Banking Details: UPI ID OR Bank Account + IFSC + Holder Name
+   - Commission Settings:
+     - Base commission per card (₹X)
+     - MSP per card type (individualized per agent)
+   - Recruitment Source: Direct / Referred by [Agent]
+3. System auto-generates:
+   - Username (email or phone)
+   - Password (random, secure)
+   - Referral Code (e.g., `FIRSTNAME##`)
+4. System sends credentials to agent via email + manual WhatsApp
+5. Agent appears in active agents list
+
+**Edit Agent:**
+- Modify commission rates
+- Update MSP per card type
+- Change banking details
+- Reset password
+- Deactivate account
+
+**Agent Performance View:**
+- Total sales breakdown by month
+- Commission earned vs. paid out
+- Top-selling card types
+- Sub-agent network (if applicable)
+
+#### 6.1.7 Financial Dashboard
+**Feature:** Real-time revenue, expenses, and profitability tracking
+
+**Revenue Overview:**
+- Total Revenue (all-time)
+- This Month Revenue
+- This Week Revenue
+- Today Revenue
+- Breakdown: Agent Sales vs. Direct Sales
+
+**Expense Tracking:**
+- Total Expenses (all-time)
+- This Month Expenses
+- Breakdown by category:
+  - Card Printing (auto-calculated or manual entry)
+  - Shipping (manual entry)
+  - Agent Commissions Paid (auto-tracked)
+  - Marketing (manual entry)
+  - Other (manual entry)
+
+**Add Expense Manually:**
+- Date
+- Category (dropdown)
+- Amount
+- Description
+
+**Commission Liabilities:**
+- Total Payable to Agents (sum of all available balances)
+- List of agents with pending payouts:
+  - Agent name, available balance, last payout date
+  - "Pay Now" button → Mark as paid + add to payout history
+
+**Payout Flow:**
+1. Click "Pay Now" on agent row
+2. Modal opens:
+   - Agent name
+   - Available balance
+   - Payout amount (editable, default = full balance)
+   - Payment method: UPI / Bank Transfer / Cash
+   - Admin notes (e.g., "Paid via UPI on 17-Jan")
+3. Click "Mark as Paid"
+4. Agent's available balance updates
+5. Payout logged in agent's history
+6. Expense auto-logged under "Agent Commissions"
+
+**COD Pending Payments:**
+- List of customers who received cards but haven't paid (COD orders)
+- Columns: Order ID, Customer Name, Amount, Days Pending
+- Action: Call customer button (opens phone dialer)
+- Bulk action: "Send Payment Reminders" (manual WhatsApp for MVP)
+
+**Profit Calculation:**
+- Gross Profit = Total Revenue - Total Expenses
+- Profit Margin % = (Gross Profit / Total Revenue) × 100
+
+#### 6.1.8 Card Catalog Management
+**Feature:** Manage available card designs and pricing
+
+**Catalog View:**
+- Each card design shows:
+  - Preview image
+  - Card name
+  - Base MSP (default minimum selling price)
+  - Description
+  - Template file (PDF for Wekonnect)
+  - Status (Active / Inactive)
+  - Total sales count
+  - Actions: Edit, Set Agent MSP, Deactivate, Delete
+
+**Add New Card Design:**
+1. Click "Add New Card"
+2. Upload preview image (JPG/PNG)
+3. Upload template file (PDF for printing)
+4. Enter card name
+5. Set base MSP (₹X)
+6. Enter description
+7. Set status (Active / Inactive)
+8. Save → Card appears in catalog
+
+**Set Agent-Specific MSP:**
+- Click "Set Agent MSP" on a card design
+- Table shows all agents with editable MSP fields
+- Example:
+  ```
+  Vertical Blue Premium (Base MSP: ₹600)
+  
+  Agent Prince: ₹600 [edit]
+  Agent Rahul: ₹550 [edit]
+  Agent Priya: ₹650 [edit]
+  ```
+- Save changes → Each agent sees their personalized MSP in their dashboard
+
+#### 6.1.9 Analytics & Reports
+**Feature:** Data-driven insights for business decisions
+
+**Sales Performance:**
+- Line/bar graph: Sales over time (daily/weekly/monthly toggle)
+- Top performing agents (leaderboard)
+- Sales by card type (pie chart)
+- Average sale price trend
+
+**Customer Insights:**
+- Total customers
+- New customers this month
+- Customer demographics (city breakdown)
+- Most popular card design
+- Average delivery time (order to delivered)
+
+**Growth Trends:**
+- Month-over-month sales growth (%)
+- Revenue growth (%)
+- New customers growth (%)
+- Agent recruitment rate
+
+**Operational Metrics:**
+- Average order approval time
+- Orders stuck in "Printing" >7 days (alert)
+- COD payment collection rate
+- Agent payout turnaround time
+
+#### 6.1.10 Automated Reminders (Notifications)
+**Feature:** Proactive alerts for pending tasks
+
+**Notification Types:**
+1. **Pending Approvals:** "5 orders pending approval for >24 hours"
+2. **Stuck Orders:** "Order #12040 stuck in 'Printing' for 7 days - check with Wekonnect?"
+3. **Pending Payouts:** "Agent Prince has ₹15,000 pending payout for 14 days"
+4. **COD Overdue:** "3 COD payments overdue (>10 days) - chase customers"
+5. **New Agent Signup:** "New agent Rahul recruited by Prince via referral link"
+6. **Low Stock Alert (Future):** "Only 50 blank cards remaining"
+
+**Notification Display:**
+- Bell icon in admin header with badge count
+- Dropdown panel showing recent notifications
+- Click notification → Navigate to relevant section
+
+#### 6.1.11 Order Search
+**Feature:** Quick search across all orders
+
+**Search By:**
+- Order ID (#12050)
+- Customer name
+- Customer phone
+- Agent code
+- Card type
+- Date range
+- Status
+- Payment status
+
+**Search Results:**
+- Highlighted matching orders in Kanban board
+- OR separate search results page (table view)
+
+#### 6.1.12 Admin Notes (Private)
+**Feature:** Internal notes on orders for tracking communication
+
+**Use Cases:**
+- "Customer requested rush delivery by 20-Jan"
+- "Wekonnect confirmed delay, new ETA: 25-Jan"
+- "Called customer on 18-Jan to confirm address"
+- "Quality issue - reprint requested"
+
+**Location:** Order details modal, visible only to admins
+
+---
+
+### 6.2 Agent Dashboard
+
+#### 6.2.1 Overview Cards
+**Feature:** Quick stats at-a-glance
+
+**Cards Display:**
+- Total Sales (lifetime card count)
+- Total Earnings (lifetime commission)
+- Available Balance (ready to withdraw)
+- Amount Received (lifetime payouts)
+
+#### 6.2.2 Submit New Order
+**Feature:** Streamlined order submission form
+
+**Form Fields:**
+1. **Customer Details:**
+   - Full Name (required)
+   - Company Name (required)
+   - Phone Number (required, with validation)
+   - Email (required, with format validation)
+   - WhatsApp Number (optional, defaults to phone)
+
+2. **Card Selection:**
+   - Card Design (dropdown populated from active catalog)
+   - Displays: Preview image, agent's personalized MSP, description
+
+3. **Customization:**
+   - Line 1 Text (max 30 characters, e.g., "RAHUL VERMA")
+   - Line 2 Text (max 30 characters, e.g., "Founder & CEO")
+   - Upload Customer Photo (JPG/PNG, max 5MB, min 800x800px resolution)
+
+4. **Pricing:**
+   - System displays: "Your MSP: ₹600"
+   - Agent enters: Final Selling Price (₹[input])
+   - System validates: Price must be ≥ MSP
+   - If price < MSP: Show warning "⚠️ Price below MSP requires admin approval"
+   - System calculates and displays commission:
+     - Base commission: ₹100
+     - Negotiation bonus: (Price - MSP) × 50% = ₹X
+     - Total commission: ₹Y
+
+5. **Additional Info:**
+   - Customer Payment Status (dropdown): Paid in Full / Advance Paid / COD
+   - Special Instructions (text area, optional)
+
+**Submission Flow:**
+1. Agent fills form
+2. Clicks "Preview Order" (optional - shows summary)
+3. Clicks "Submit Order"
+4. System validates all fields
+5. Order submitted → Appears in admin panel as "Pending Approval"
+6. Order appears in agent's "Orders" tab with status "Pending Approval"
+7. Agent receives confirmation: "Order #12050 submitted successfully!"
+
+**Below-MSP Handling:**
+- If agent tries to submit price below MSP:
+- Warning modal: "⚠️ Price Below MSP. Your MSP for this card is ₹600. Selling at ₹550 requires admin approval. Commission will be calculated ONLY if approved."
+- Options: [Cancel] [Submit for Special Approval]
+- If submitted, order flagged in admin panel for review
+
+#### 6.2.3 Order Tracking (Card View)
+**Feature:** Visual list of all submitted orders
+
+**Display Format:** Cards (not table) for mobile-friendliness
+
+**Each Order Card Shows:**
+- Order ID
+- Customer name
+- Card type
+- Sale price | Commission amount
+- Submission date
+- Current status (color-coded badge)
+- Action buttons: [View Details] [Contact Customer] [Reorder] [Cancel Request]
+
+**Status Badges:**
+- ⚠️ Pending Approval (yellow)
+- ✅ Approved (green)
+- 🖨️ Printing (blue)
+- 📦 Printed (purple)
+- 🚚 Shipped (orange)
+- 🎉 Delivered (teal)
+- 💰 Paid (dark green)
+- ❌ Rejected (red)
+
+**Filters:**
+- Status: All / Pending / Approved / Printing / Shipped / Delivered / Paid / Rejected
+- Date Range: Last 7 days / Last 30 days / All time
+- Search: By customer name or order ID
+
+**Order Detail View:**
+- Full customer info
+- Card design + customization
+- Pricing breakdown
+- Commission calculation
+- Payment status
+- Current status with timeline
+- Admin notes (if any, visible to agent)
+- Rejection reason (if rejected)
+
+**Actions:**
+- **View Details:** Expand full order information
+- **Contact Customer:** Shows customer's phone/email (agent can call/message)
+- **Reorder:** Pre-fills form with same customer details (for repeat orders)
+- **Cancel Request:** If status is "Pending Approval", agent can cancel before admin reviews
+
+**Rejected Orders:**
+- Status: ❌ Rejected
+- Shows rejection reason from admin
+- Action: [Resubmit Order] → Pre-fills original data, agent can fix and resubmit
+
+#### 6.2.4 Card Catalog (Agent View)
+**Feature:** Browse available card designs with personalized pricing
+
+**Display:** Grid or card layout
+
+**Each Card Shows:**
+- Preview image (large, high-quality)
+- Card design name
+- Agent's personalized MSP (e.g., "Your MSP: ₹600")
+- Description
+- Status badge (✅ Active / ❌ Out of Stock)
+- Button: [Use This Card for New Order]
+
+**Filters:**
+- Search by card name
+- Filter: ✅ Active Only / Show All
+- Sort: MSP Low-High / MSP High-Low / Name A-Z
+
+**Click "Use This Card" → Redirects to order submission form with card pre-selected**
+
+#### 6.2.5 Analytics (Agent)
+**Feature:** Simple sales visualization
+
+**Graph:** Line chart showing cards sold over time
+- Toggle: Daily / Weekly / Monthly view
+
+**Stats:**
+- This Month: X cards sold
+- Last Month: Y cards sold
+- Growth: +Z% 📈 or -Z% 📉
+
+**Breakdown:**
+- Total sales by card type (simple list or pie chart)
+
+#### 6.2.6 Sub-Agent Network (MLM Feature)
+**Feature:** Recruit and manage sub-agents for override commissions
+
+**Recruitment Flow:**
+1. Agent clicks "Recruit New Agent" button
+2. System generates unique signup link: `yourplatform.com/agent-signup?ref=PRINCE10`
+3. Agent shares link via WhatsApp, SMS, or in-person (QR code)
+4. New recruit fills signup form:
+   - Full Name
+   - Phone Number
+   - Email
+   - City
+   - Sales experience (text area)
+5. Recruit submits → Account auto-created
+6. System sends login credentials to recruit
+7. System links recruit as sub-agent under parent agent
+8. Admin receives notification: "New agent Rahul recruited by Prince"
+
+**Sub-Agent Dashboard Section:**
+- Header: "Your Recruited Agents: 2"
+- List of sub-agents (cards):
+  ```
+  ┌────────────────────────────────┐
+  │ Rahul Kumar                    │
+  │ Joined: 10-Jan-2026            │
+  │ Total Sales: 23 cards          │
+  │ Your Override Earnings: ₹460   │
+  │ Status: ✅ Active               │
+  └────────────────────────────────┘
+  ```
+- Total Override Earnings displayed separately from direct sales earnings
+
+**Override Commission Calculation:**
+- When sub-agent makes a sale of ₹1,000:
+  - Sub-agent earns their full commission (e.g., ₹200)
+  - Parent agent earns 2% of sale price = ₹20 (override)
+- Override added to parent agent's Available Balance when sub-agent's order is marked "Paid"
+
+#### 6.2.7 Payout Management
+**Feature:** View balance and request withdrawals
+
+**Available Balance Display:**
+- Large card: "Available Balance: ₹2,300"
+- Button: [Request Payout]
+
+**Request Payout:**
+- Simple notification to admin (no automated processing)
+- Agent clicks button → Admin receives notification
+- Admin manually processes payout (UPI/bank transfer/cash)
+- Admin marks as paid in admin panel
+- Agent sees updated balance and payout history
+
+**Payout History Table:**
+- Date
+- Amount
+- Payment Method (UPI, Bank Transfer, Cash)
+- Admin Notes (e.g., "Paid via UPI to prince@oksbi on 12-Jan")
+- Status: ✅ Completed
+
+#### 6.2.8 Referral Code Display
+**Feature:** Prominent display of agent's unique code
+
+**Display:**
+- Large, centered referral code: `PRINCE10`
+- Copy button (one-click copy to clipboard)
+- QR code image (for in-person sharing)
+- Share buttons:
+  - Share via WhatsApp (pre-filled message with recruitment link)
+  - Share via Email
+  - Download QR code (PNG image)
+
+**Pre-filled WhatsApp Message:**
+```
+Join our team as a Marketing Agent and earn great commissions!
+
+Sign up here: yourplatform.com/agent-signup?ref=PRINCE10
+
+Any questions? Call me at [agent's phone].
+```
+
+#### 6.2.9 Training Resources
+**Feature:** Self-service learning materials
+
+**Resources Available:**
+1. **PDF Guide:** "How to Pitch Smart Cards Like a Pro"
+   - Download button
+   - Covers: Product benefits, objection handling, pricing strategies
+
+2. **Video Tutorial:** "Card Design Options Explained"
+   - Embedded video (5 minutes)
+   - Shows all card designs, use cases, pricing tiers
+
+3. **WhatsApp Community:** "Agent Support Group"
+   - Join button linking to WhatsApp group
+   - Connect with other agents, share tips, ask questions
+
+4. **Contact Support:**
+   - Admin's WhatsApp number
+   - Button: "Send Message on WhatsApp"
+   - For urgent issues or questions
+
+#### 6.2.10 Notifications (In-Dashboard)
+**Feature:** Real-time updates on order status and earnings
+
+**Notification Bell:** Header icon with badge count
+
+**Notification Types:**
+1. **Order Approved:** "Order #12044 (Priya Sharma) has been approved"
+2. **Order Rejected:** "Order #12043 (Amit Singh) rejected - Reason: Photo resolution too low" + [Resubmit] button
+3. **Commission Added:** "₹200 added to your available balance - Order #12045 (Rahul Verma) marked as Paid"
+4. **Payout Processed:** "₹5,000 payout processed via UPI on 12-Jan"
+5. **Sub-Agent Sale:** "Your recruit Rahul made a sale - You earned ₹20 override"
+
+**Display:** Dropdown panel, chronological order, most recent first
+
+#### 6.2.11 Password Management
+**Feature:** Admin-controlled password reset (MVP)
+
+**Flow:**
+- Agent forgets password → Contacts admin via WhatsApp/call
+- Admin resets password in admin panel
+- Admin sends new password to agent
+- Agent logs in with new password
+- (Future: Self-service password reset via email link)
+
+---
+
+### 6.3 Customer Dashboard
+
+#### 6.3.1 Login Access
+**Feature:** Secure login at bottom of public tap view page
+
+**Login Link Location:**
+- Tiny text in footer of public tap view: "Powered by [YourBrand] | Login"
+- Clicking opens modal overlay (not redirect to separate page)
+
+**Login Modal:**
+- Username field (email or phone)
+- Password field
+- "Login" button
+- No "Forgot Password" link (MVP - must contact admin)
+
+**Post-Login:** Redirects to customer dashboard
+
+#### 6.3.2 Profile Editor
+**Feature:** Edit all public profile information
+
+**Editable Fields:**
+
+**Personal Information:**
+- Profile Photo (upload new image, JPG/PNG, max 5MB)
+- Full Name
+- Job Title / Headline
+- Company Name
+- Bio / About Me (text area, max 500 characters)
+
+**Contact Information:**
+- Phone Number
+- Email Address
+- WhatsApp Number (optional, defaults to phone)
+
+**Social Links:**
+- LinkedIn URL
+- Instagram URL
+- Facebook URL
+- Twitter/X URL
+- Website/Portfolio URL
+- Other custom links (up to 5 total)
+
+**Save Contact Button Configuration:**
+- Customer cannot disable this button
+- Auto-populated with all contact info entered
+
+**Data Validation:**
+- Phone: Must be valid Indian mobile number (+91 format)
+- Email: Must be valid email format
+- LinkedIn: Must start with `linkedin.com/in/` or `linkedin.com/company/`
+- Instagram: Must start with `instagram.com/`
+- URLs: Must include `http://` or `https://`
+
+**Image Upload Requirements:**
+- Min resolution: 800x800px
+- Max file size: 5MB
+- Accepted formats: JPG, PNG, WebP
+- Auto-crop to square if not square
+- Compress to <100KB for web display
+
+#### 6.3.3 Preview Mode
+**Feature:** See how profile looks before saving
+
+**Flow:**
+1. Customer makes changes in editor
+2. Clicks "Preview" button
+3. Modal opens showing mobile view of public tap page
+4. Customer sees exactly how profile will appear to someone tapping their card
+5. Options: [Close Preview] [Save Changes]
+
+**Preview Displays:**
+- Exact layout of public tap view
+- All social links as they'll appear
+- "Save Contact" button (functional in preview)
+- Mobile device frame for context
+
+#### 6.3.4 Save Changes
+**Feature:** Instant update to live public page
+
+**Flow:**
+1. Customer clicks "Save Changes"
+2. System validates all fields
+3. If validation passes:
+   - Success message: "Profile updated successfully!"
+   - Changes go live immediately on public tap view
+   - Customer redirected to dashboard home
+4. If validation fails:
+   - Error messages shown next to problematic fields
+   - Customer fixes errors and tries again
+
+**No Approval Required:** Changes go live instantly (admin can edit later if inappropriate content reported)
+
+#### 6.3.5 Dashboard Home
+**Feature:** Simple welcome screen with quick actions
+
+**Display:**
+- Welcome message: "Hi [Name]! Your card is active."
+- Profile URL: `yourplatform.com/[slug]` with copy button
+- Quick stats (optional):
+  - Card activated on: [Date]
+  - Last profile update: [Date]
+
+**Quick Actions:**
+- [Edit Profile] → Opens profile editor
+- [Preview Public Page] → Opens tap view in new tab
+- [Download Portfolio] → PDF/Image download options
+- [Change Password] → Contact admin (MVP) or self-service form (future)
+
+#### 6.3.6 Download Portfolio
+**Feature:** Export profile as PDF or image for offline sharing
+
+**Options:**
+1. **Download as PDF:**
+   - Formatted as digital business card
+   - Contains: Photo, Name, Title, Company, Contact Info, Social Links
+   - File naming: `[Name]_SmartCard_Portfolio.pdf`
+
+2. **Download as Image:**
+   - PNG format
+   - Social media friendly (1080x1080px square or 1200x630px landscape)
+   - Contains same info as PDF in visual layout
+
+**Use Cases:**
+- Email signature attachment
+- LinkedIn post
+- Print on traditional paper cards (backup)
+- Share via WhatsApp as image
+
+---
+
+### 6.4 Public Tap View Page
+
+#### 6.4.1 Performance Requirements (Critical)
+**Target Load Times:**
+- 3G Network: <3 seconds
+- 4G Network: <1.5 seconds
+- WiFi: <1 second
+
+**Optimization Strategies:**
+- Aggressive image compression (WebP format, <100KB)
+- Minified HTML/CSS/JS
+- Inline critical CSS (no external stylesheet blocking)
+- CDN delivery for static assets
+- Browser caching (30-day cache headers)
+- Lazy-load non-critical elements
+- No heavy frameworks (vanilla JS or minimal library)
+- Preload fonts
+- DNS prefetch for external domains
+
+#### 6.4.2 Page Layout (Mobile-First)
+**Visual Hierarchy (Top to Bottom):**
+
+1. **Profile Photo**
+   - Circular crop, centered
+   - Large (150x150px displayed, higher resolution source)
+   - Fast-loading (WebP with JPG fallback)
+
+2. **Name & Title**
+   - Name: Large, bold font (24-28px)
+   - Job Title: Medium font (16-18px), gray color
+   - Company Name: Medium font (14-16px), lighter gray
+
+3. **Bio/About Section (if filled)**
+   - Text area with line breaks preserved
+   - Max 3-4 lines before "Read More" expansion
+   - Light background to separate from contact section
+
+4. **Contact Information**
+   - Phone: Clickable (tel: link) - opens phone dialer
+   - Email: Clickable (mailto: link) - opens email client
+   - WhatsApp: Clickable - opens WhatsApp chat with pre-filled message
+
+5. **Social Links**
+   - Icon buttons (LinkedIn, Instagram, Facebook, Twitter, Website, etc.)
+   - Horizontal scrollable row if >5 links
+   - Icons: Font Awesome or inline SVG (lightweight)
+   - Opens in new tab
+
+6. **Save to Contact Button**
+   - Prominent, primary action button
+   - Full width or centered
+   - Downloads .vcf file on click
+   - Works on all devices (iOS, Android, desktop)
+
+7. **Download Portfolio Section**
+   - Two buttons: [Download as PDF] [Download as Image]
+   - Secondary styling (less prominent than Save Contact)
+
+8. **Get Your Card CTA**
+   - Small banner or button at bottom
+   - Text: "Get your own smart card"
+   - Links to landing page
+   - Marketing opportunity to convert viewers into customers
+
+9. **Footer**
+   - Tiny text: "Powered by [YourBrand]"
+   - Login link (for cardholder only)
+
+#### 6.4.3 Save to Contact (.vcf) Generation
+**Feature:** One-tap contact saving across all devices
+
+**vCard Format (VCF):**
+```
+BEGIN:VCARD
+VERSION:3.0
+FN:[Full Name]
+ORG:[Company Name]
+TITLE:[Job Title]
+TEL;TYPE=CELL:[Phone Number]
+EMAIL:[Email Address]
+URL:[Website URL]
+X-SOCIALPROFILE;TYPE=linkedin:[LinkedIn URL]
+X-SOCIALPROFILE;TYPE=instagram:[Instagram URL]
+NOTE:[Bio text]
+END:VCARD
+```
+
+**Button Behavior:**
+- Click → Instantly downloads `[Name]_Contact.vcf` file
+- iOS: Opens native "Add Contact" dialog
+- Android: Opens default contacts app or shows download notification
+- Desktop: Downloads file (user imports manually)
+
+**Data Included in vCard:**
+- Full Name (required)
+- Job Title (if provided)
+- Company Name (if provided)
+- Phone Number (primary contact)
+- Email Address
+- WhatsApp (as secondary phone number)
+- Website URL
+- LinkedIn, Instagram URLs (as social profiles)
+- Bio (in Notes field)
+
+**Exclusions (to avoid cluttering phone contacts):**
+- Facebook, Twitter URLs (too much noise)
+- Profile photo (optional, can bloat file size)
+
+#### 6.4.4 Download Portfolio (PDF)
+**Feature:** Professional PDF export
+
+**PDF Layout:**
+- Header: Profile photo + Name + Title + Company
+- Contact section: Phone, Email, WhatsApp (with icons)
+- Social links section: LinkedIn, Instagram, etc. (clickable URLs)
+- Bio section (if provided)
+- Footer: QR code linking to live profile URL + "Powered by [YourBrand]"
+
+**Technical:**
+- Generated server-side (on-demand)
+- File size: <500KB
+- A4 or letter size (printable)
+- Naming: `[Name]_Portfolio.pdf`
+
+#### 6.4.5 Download Portfolio (Image)
+**Feature:** Social media-ready profile card image
+
+**Image Specifications:**
+- Format: PNG (transparent background optional) or JPG
+- Size: 1080x1350px (Instagram portrait) OR 1200x630px (Facebook/LinkedIn landscape)
+- Customer chooses format in download modal
+
+**Image Layout:**
+- Designed template with brand colors
+- Profile photo
+- Name, title, company
+- Contact info (phone, email, social icons)
+- QR code linking to profile
+- "Powered by [YourBrand]" watermark
+
+**Use Cases:**
+- LinkedIn background image
+- Instagram story/post
+- WhatsApp status
+- Email signature image
+
+#### 6.4.6 Page is Live Immediately
+**Feature:** No activation delay - portfolio accessible as soon as account created
+
+**Flow:**
+1. Admin approves order → Customer account auto-created
+2. Portfolio URL immediately accessible (e.g., `yourplatform.com/rahul-verma`)
+3. Page shows default data from order form:
+   - Name (from order)
+   - Company (from order)
+   - Phone (from order)
+   - Email (from order)
+   - Photo (uploaded by agent/customer during order)
+4. Customer receives login credentials
+5. Customer can edit profile anytime
+6. Updates reflect instantly on live page
+
+**No "Draft" State:** Page is public from moment of creation (but customer may not have card yet)
+
+**Edge Case:** If someone discovers URL before card is delivered, they see a complete profile (not an error page)
+
+#### 6.4.7 Smart Defaults (Pre-population)
+**Feature:** Profile auto-filled from order data
+
+**Pre-populated Fields:**
+- Full Name (from order)
+- Company Name (from order)
+- Phone Number (from order)
+- Email (from order)
+- WhatsApp (defaults to phone number)
+- Profile Photo (uploaded during order)
+- Job Title: "Line 2" from card customization (e.g., "Founder & CEO")
+
+**Empty Fields (Customer Fills Later):**
+- Bio
+- Social links (LinkedIn, Instagram, etc.)
+- Website URL
+
+**Benefit:** Customer's card works immediately even if they never log in to edit profile
+
+---
+
+### 6.5 Landing Page
+
+#### 6.5.1 Direct Order Form
+**Feature:** Customers can order cards without agent involvement
+
+**Form Fields (Same as Agent Order Form):**
+1. Personal Details: Name, Company, Phone, Email, WhatsApp
+2. Upload Photo
+3. Select Card Design (from active catalog)
+4. Custom Text: Line 1, Line 2
+5. Delivery Address:
+   - Flat/House No
+   - Building/Society
+   - Street/Area
+   - Landmark (optional)
+   - City (dropdown)
+   - State (dropdown)
+   - Pincode (6-digit validation)
+6. Payment Method: COD (MVP - online payment future)
+
+**Pricing Display:**
+- Show price per card design (decided during development)
+- No negotiation - fixed pricing for direct orders
+
+**Submission Flow:**
+1. Customer fills form
+2. Clicks "Place Order"
+3. System validates all fields
+4. Order appears in admin panel with tag "🌐 WEBSITE" (Direct Sale)
+5. Customer receives confirmation email:
+   ```
+   Subject: Order Confirmed - Your Smart Card is Being Prepared!
+   
+   Hi [Name],
+   
+   Your order (#12051) has been confirmed!
+   
+   Order Summary:
+   - Card Design: Vertical Blue Premium
+   - Price: ₹699
+   - Payment: Cash on Delivery
+   - Delivery Address: [Address]
+   
+   Estimated Delivery: 7 days
+   
+   We'll contact you via WhatsApp when your card is ready to ship.
+   
+   Track your order: [Future feature]
+   
+   Questions? Reply to this email or WhatsApp us at [number].
+   ```
+6. Admin receives notification in admin panel
+7. Admin reviews and approves (same workflow as agent orders)
+8. No commission paid (direct sale)
+
+#### 6.5.2 Order Tracking (Email Updates Only - MVP)
+**Feature:** Customer receives email notifications at each status change
+
+**Email Triggers:**
+1. Order Confirmed (immediately after submission)
+2. Order Approved - "Your card is being printed!"
+3. Card Shipped - "Your card is on the way!" (with tracking number if available)
+4. Delivered - "Your card has been delivered - enjoy!"
+
+**Future Enhancement:** Tracking page where customer enters Order ID + Phone to see status
+
+#### 6.5.3 Agent Recruitment Section (Optional)
+**Feature:** Landing page includes "Become an Agent" CTA
+
+**Section Content:**
+- Headline: "Earn by Selling Smart Cards"
+- Benefits: Flexible hours, unlimited earning potential, marketing support
+- CTA Button: "Join as Agent"
+
+**Click Flow:**
+1. Customer clicks "Become an Agent"
+2. Redirects to signup form OR opens modal
+3. Form fields:
+   - Full Name
+   - Phone Number
+   - Email
+   - City
+   - Sales Experience (optional text area)
+4. Submit → Admin receives "Agent Application" notification
+5. Admin reviews and approves/rejects
+6. If approved: Agent account created, credentials sent
+
+**Note:** All agent applications require admin approval (no auto-approval for quality control)
+
+#### 6.5.4 Interactive Elements (Decided During Development)
+**Potential Features:**
+- Card design carousel/gallery (click to see enlarged previews)
+- Demo video showing NFC tap in action
+- Sample tap view (demo profile customers can interact with)
+- FAQ accordion
+- Customer testimonials
+- Live chat widget (WhatsApp button)
+- Trust signals: "500+ Professionals | 7-Day Delivery | Secure Payments"
+
+**Design/UI:** To be finalized during development phase
+
+---
+
+## 7. Nice-to-Have Features (Post-MVP)
+
+### 7.1 Premium Subscription Model
+**Feature:** Recurring revenue through advanced features
+
+**Tiers:**
+- **Basic (Free):** Current MVP features
+- **Premium (₹299/year):**
+  - Custom theme colors for tap view page
+  - Remove "Powered by [Brand]" footer
+  - Priority support
+  - Unlimited social links (basic limited to 5)
+  - Advanced portfolio layouts (multiple templates to choose from)
+
+**Implementation:** Upgrade button in customer dashboard, payment via Razorpay
+
+---
+
+### 7.2 Tap Analytics for Customers
+**Feature:** Customers see who/when their card was tapped
+
+**Dashboard Metrics:**
+- Total taps (lifetime)
+- Taps this week/month
+- Geographic distribution (city-level, based on IP)
+- Device types (Android vs iOS)
+- Time of day distribution (heatmap)
+- Unique visitors vs. repeat taps
+
+**Privacy:** No personally identifiable information (PII) of tappers collected
+
+**Use Case:** Measure networking ROI, understand which events generated most taps
+
+---
+
+### 7.3 Custom Themes & Branding
+**Feature:** Customers personalize tap view page design
+
+**Customization Options:**
+- Color scheme (primary color, background color, text color)
+- Font selection (3-5 professional fonts)
+- Layout style (minimal, classic, modern, bold)
+- Background pattern or gradient
+- Custom logo (for businesses)
+
+**Implementation:** Visual theme builder in customer dashboard with live preview
+
+---
+
+### 7.4 Video Introduction
+**Feature:** Embed video on tap view page
+
+**Use Cases:**
+- Personal introduction ("Hi, I'm Rahul...")
+- Product demo (for sales professionals)
+- Company overview (for founders)
+- Portfolio showcase (for creatives)
+
+**Technical:**
+- YouTube or Vimeo embed (not self-hosted for MVP)
+- Auto-play muted (mobile-friendly)
+- Customer pastes video URL in dashboard
+
+---
+
+### 7.5 QR Code Fallback
+**Feature:** Physical card includes QR code for non-NFC devices
+
+**Implementation:**
+- QR code printed on back of card (during design phase)
+- QR encodes same portfolio URL as NFC chip
+- Works on all smartphones (camera scan)
+- Useful for older devices or countries with low NFC adoption
+
+**Benefit:** Universal compatibility, zero tap failures
+
+---
+
+### 7.6 Multiple Card Management
+**Feature:** One customer owns multiple cards for different contexts
+
+**Use Cases:**
+- Personal brand card (entrepreneur profile)
+- Corporate card (employee role at Company X)
+- Side business card (freelance work)
+
+**Implementation:**
+- Customer dashboard shows "My Cards" section
+- Each card has separate portfolio URL
+- Switch between cards to edit different profiles
+- Different pricing: ₹X for first card, ₹Y for additional cards
+
+---
+
+### 7.7 Team/Company Accounts
+**Feature:** Bulk card orders for businesses
+
+**Use Cases:**
+- Startup ordering 20 cards for all employees
+- Agency ordering 100 cards with company branding
+- Conference organizers ordering 500 cards for attendees
+
+**Features:**
+- Company admin dashboard (manages all employee cards)
+- Bulk upload (CSV with employee names, titles, emails)
+- Consistent branding across all cards (company logo, colors)
+- Centralized billing
+- Analytics dashboard (total taps across all company cards)
+
+**Pricing:** Discounted rate for bulk orders (e.g., ₹500/card for 50+ quantity)
+
+---
+
+### 7.8 CRM Integrations
+**Feature:** Export contacts to Salesforce, HubSpot, Zoho, Google Contacts
+
+**Flow:**
+- Customer taps card → Views profile → Saves contact
+- Option: "Add to Salesforce" button (if customer has integration enabled)
+- Contact auto-syncs to CRM with custom tags
+
+**Implementation:** OAuth integration with major CRM platforms
+
+---
+
+### 7.9 Email Signature Generator
+**Feature:** Auto-generate email signature with card details
+
+**Flow:**
+- Customer clicks "Generate Email Signature" in dashboard
+- System creates HTML email signature with:
+  - Name, title, company
+  - Contact info
+  - Social links
+  - "View My Smart Card" button linking to tap view
+- Copy-paste into Gmail, Outlook, etc.
+
+---
+
+### 7.10 Lead Capture Form
+**Feature:** Tap viewers can submit inquiry/lead form
+
+**Use Case:**
+- Sales professional wants leads from networking events
+- Freelancer wants project inquiries
+
+**Implementation:**
+- Toggle in customer dashboard: "Enable lead capture on my card"
+- Tap view page shows contact form at bottom:
+  - Name, Email, Phone, Message
+- Submissions sent to customer's email
+- Leads dashboard in customer portal (future)
+
+---
+
+### 7.11 Offline Mode (PWA)
+**Feature:** Tap view page works without internet
+
+**Implementation:**
+- Service worker caches profile page
+- Once loaded, page works offline
+- Updates sync when connection restored
+
+**Use Case:** Networking in areas with poor cellular coverage (conference halls, basements)
+
+---
+
+### 7.12 WhatsApp/SMS Notifications (Automated)
+**Feature:** Replace manual notifications with automated messages
+
+**Triggers:**
+- Order approved → WhatsApp: "Your card is being printed!"
+- Card shipped → SMS: "Your card shipped! Track: [link]"
+- Agent order approved → WhatsApp: "Order #12050 approved, commission: ₹200"
+
+**Implementation:** Integrate WhatsApp Business API or Twilio for SMS
+
+---
+
+### 7.13 Self-Service Password Reset
+**Feature:** Customers/agents reset password without admin intervention
+
+**Flow:**
+- Click "Forgot Password" on login
+- Enter email/phone
+- Receive reset link via email or OTP via SMS
+- Set new password
+- Login with new password
+
+**Benefit:** Reduces admin support burden
+
+---
+
+### 7.14 Multi-Language Support
+**Feature:** Tap view pages in Hindi + English
+
+**Implementation:**
+- Language toggle on tap view page
+- Customer enters bio/title in both languages
+- Auto-detection based on browser language
+- Critical for rural/tier-2 India expansion
+
+---
+
+### 7.15 Advanced Analytics for Admin
+**Feature:** Deeper business insights
+
+**Reports:**
+- Customer lifetime value (CLV)
+- Churn rate (customers who deactivate cards)
+- Agent performance trends over time
+- Revenue forecasting (based on historical data)
+- Inventory predictions (card stock needed next month)
+- A/B test landing page variations (conversion rate optimization)
+
+---
+
+### 7.16 White-Label Solution
+**Feature:** Sell platform to other entrepreneurs
+
+**Implementation:**
+- Partner dashboard (above admin level)
+- Partners manage their own admins, agents, customers
+- Custom branding per partner (logo, colors, domain)
+- Revenue share model (you take %)
+
+**Use Case:** Scale to other cities/regions through local partners
+
+---
+
+## 8. User Flows & Workflows
+
+### 8.1 End-to-End Order Flow (Agent-Driven Sale)
+
+**Step-by-Step:**
+
+1. **Agent Meets Customer (Offline)**
+   - Agent shows physical card samples
+   - Explains NFC technology, benefits
+   - Customer interested
+
+2. **Agent Collects Details**
+   - Customer's name, company, phone, email
+   - Takes photo (smartphone camera)
+   - Customer chooses card design
+   - Negotiates price (above agent's MSP)
+
+3. **Agent Submits Order (Online - Dashboard)**
+   - Logs into agent dashboard
+   - Clicks "Submit New Order"
+   - Fills form with customer details
+   - Uploads customer photo
+   - Selects card design (sees personalized MSP)
+   - Enters negotiated sale price
+   - System calculates commission
+   - Enters payment status (Paid/Advance/COD)
+   - Adds special instructions (if any)
+   - Clicks "Submit Order"
+   - Receives confirmation
+
+4. **Order Pending (Admin Queue)**
+   - Order appears in admin Kanban under "Pending Approval"
+   - Admin receives notification
+
+5. **Admin Reviews Order**
+   - Admin clicks on order card
+   - Reviews customer details, photo quality, pricing
+   - Chooses portfolio URL format (name vs. company)
+   - Adds admin notes (if needed)
+   - Clicks "Approve & Send to Wekonnect"
+
+6. **System Auto-Actions (Instant)**
+   - Creates customer account (username, password auto-generated)
+   - Creates portfolio page with smart defaults
+   - Sends credentials to customer (email + manual WhatsApp)
+   - Opens WhatsApp Web with pre-filled order message to Wekonnect
+
+7. **Admin Sends to Wekonnect**
+   - Reviews WhatsApp message (includes order details + attachments)
+   - Clicks Send
+   - Wekonnect receives order
+   - Drags order to "Approved" column
+
+8. **Wekonnect Confirms Printing**
+   - Wekonnect replies on WhatsApp: "Order confirmed, will ship by [date]"
+   - Admin drags order to "Printing" column
+
+9. **Card Printed & Shipped to Admin**
+   - Wekonnect prints card
+   - Ships to admin's Indore address
+   - Admin drags order to "Printed" column
+
+10. **Admin Writes NFC & Packages Card**
+    - Admin receives physical card
+    - Opens order in admin panel
+    - Copies portfolio URL displayed in order details
+    - Uses NFC writer hardware to write URL to card chip
+    - Packages card in envelope/box
+    - Drags order to "Ready to Ship"
+
+11. **Admin Ships to Customer**
+    - Arranges courier delivery OR hand-delivers (if local)
+    - Drags order to "Shipped"
+    - Optionally adds tracking number
+    - System sends notification to customer (future: automated)
+
+12. **Customer Receives Card**
+    - Customer receives package
+    - Admin drags order to "Delivered"
+    - If COD: Customer pays, admin marks order as "Paid"
+    - If prepaid: Admin marks order as "Paid" immediately
+
+13. **Commission Processing**
+    - Order status = "Paid"
+    - Agent's commission moves to "Available Balance"
+    - Agent receives notification
+    - Agent can request payout
+
+14. **Customer Uses Card**
+    - Customer logs into dashboard (using credentials received earlier)
+    - Edits profile (adds social links, bio, etc.)
+    - Saves changes → Profile goes live
+    - Customer taps card at networking event
+    - Recipient's phone opens tap view page
+    - Recipient sees customer's profile
+    - Recipient clicks "Save Contact" → Contact saved to phone
+
+**Total Timeline:** 7-10 days (order to delivery)
+
+---
+
+### 8.2 Customer Lost Card Scenario
+
+**Scenario:** Customer loses physical NFC card
+
+**Workflow:**
+
+1. **Customer Contacts Admin**
+   - Calls, emails, or WhatsApps admin
+   - Reports card lost/stolen
+
+2. **Admin Options (To Be Decided - See Question 1 in Final Questions):**
+   - **Option A:** Keep same URL, print replacement card with same URL
+   - **Option B:** Deactivate old URL, create new URL, print new card
+
+3. **Admin Creates Replacement Order**
+   - In admin panel, clicks "Create Replacement Order" on original order
+   - Pre-fills all customer details from original
+   - Charges customer for replacement (₹X fee?)
+   - Processes as new order through same workflow
+
+4. **Customer Receives Replacement**
+   - Same URL (if Option A) → No action needed
+   - New URL (if Option B) → Customer updates LinkedIn, email signature, etc.
+
+---
+
+### 8.3 Agent Payout Workflow
+
+**Scenario:** Agent has ₹5,000 available balance, wants withdrawal
+
+**Workflow:**
+
+1. **Agent Requests Payout**
+   - Logs into agent dashboard
+   - Clicks "Request Payout" button
+   - System sends notification to admin
+
+2. **Admin Reviews Request**
+   - Admin sees notification: "Agent Prince requested payout"
+   - Opens "Finance → Commission Liabilities" section
+   - Clicks "Pay Now" on Agent Prince row
+
+3. **Admin Processes Payment**
+   - Modal opens showing agent's available balance
+   - Admin pays via UPI/bank transfer/cash (offline)
+   - Enters payment details in modal:
+     - Payout amount (default = full balance, editable)
+     - Payment method (UPI/Bank/Cash)
+     - Admin notes (e.g., "Paid via UPI to prince@oksbi on 17-Jan")
+   - Clicks "Mark as Paid"
+
+4. **System Updates Records**
+   - Agent's available balance resets to ₹0 (or remaining if partial)
+   - Payout logged in agent's Payout History
+   - Expense auto-logged under "Agent Commissions" category
+   - Agent receives notification: "Payout processed - ₹5,000"
+
+---
+
+### 8.4 Sub-Agent Recruitment & Override Commission
+
+**Scenario:** Agent Prince recruits Agent Rahul
+
+**Workflow:**
+
+1. **Prince Generates Referral Link**
+   - Logs into agent dashboard
+   - Clicks "Recruit New Agent"
+   - System generates link: `yourplatform.com/agent-signup?ref=PRINCE10`
+   - Prince shares link via WhatsApp
+
+2. **Rahul Clicks Link & Signs Up**
+   - Fills signup form (name, phone, email, city, experience)
+   - Submits
+
+3. **System Auto-Creates Account**
+   - Rahul's agent account created instantly
+   - Linked to Prince as parent agent
+   - Credentials generated and sent to Rahul
+   - Admin receives notification: "New agent Rahul recruited by Prince"
+
+4. **Rahul Makes First Sale**
+   - Rahul submits order for ₹1,000 card
+   - Admin approves
+   - Customer pays
+   - Rahul earns ₹200 commission (his full commission)
+   - Prince earns ₹20 override (2% of ₹1,000 sale)
+
+5. **Both Agents See Earnings**
+   - Rahul's dashboard: "Available Balance: ₹200"
+   - Prince's dashboard:
+     - Direct Sales Earnings: ₹5,000
+     - Sub-Agent Override Earnings: ₹20
+     - Total Available Balance: ₹5,020
+
+---
+
+## 9. Non-Functional Requirements
+
+### 9.1 Performance
+- **Page Load Time:** Tap view pages must load in <3 seconds on 3G networks
+- **Database Query Time:** All dashboard queries must return in <500ms
+- **Image Optimization:** All images compressed to <100KB
+- **Concurrent Users:** System must support 100+ simultaneous dashboard users
+- **Uptime:** 99.9% availability (critical for tap view pages)
+
+### 9.2 Security
+- **Password Storage:** Bcrypt hashing with salt (never store plain text)
+- **HTTPS:** All pages served over SSL/TLS
+- **SQL Injection Prevention:** Parameterized queries, input sanitization
+- **XSS Prevention:** Escape all user-generated content
+- **CSRF Protection:** Token-based form submission
+- **Admin Authentication:** Secure session management, auto-logout after 30 minutes inactivity
+- **File Upload Validation:** Image type verification, malware scanning (future)
+
+### 9.3 Scalability
+- **Database:** Design for 10,000+ customers, 100+ agents without performance degradation
+- **Image Storage:** Use cloud storage (AWS S3, Cloudflare R2) for scalability
+- **CDN:** Static assets served via CDN for global speed
+- **Horizontal Scaling:** Architecture supports adding more servers as traffic grows
+
+### 9.4 Reliability
+- **Data Backup:** Daily automated database backups (retained for 30 days)
+- **Error Logging:** Centralized error tracking (Sentry or similar)
+- **Graceful Degradation:** If image fails to load, show placeholder (not broken layout)
+- **Failover:** If primary database fails, switch to replica (future)
+
+### 9.5 Usability
+- **Mobile-First:** All dashboards optimized for smartphone use
+- **Accessibility:** WCAG 2.1 AA compliance (alt text, keyboard navigation, screen reader support)
+- **Browser Support:** Chrome, Safari, Firefox, Edge (latest 2 versions)
+- **Offline Graceful Handling:** If user loses connection, show friendly message (not crash)
+
+### 9.6 Compatibility
+- **NFC Standards:** NDEF format, Type 2 Tag (NTAG216 compliant)
+- **vCard Standard:** VCF 3.0 format for maximum device compatibility
+- **PDF Standard:** PDF/A for archival compatibility
+- **Image Formats:** WebP with JPG/PNG fallback for older browsers
+
+---
+
