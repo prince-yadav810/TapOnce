@@ -19,6 +19,7 @@
 /admin/agents               → Agent Management
 /admin/finance              → Financial Dashboard
 /admin/catalog              → Card Catalog Management
+/admin/inbox                → Inbox & Notifications
 
 /agent                      → Agent Dashboard Home
 /agent/orders               → Order Tracking
@@ -61,6 +62,7 @@
 | `/admin/agents` | `app/admin/agents/page.tsx` | Agent management | ✅ Complete |
 | `/admin/finance` | `app/admin/finance/page.tsx` | Revenue & expenses | ✅ Complete |
 | `/admin/catalog` | `app/admin/catalog/page.tsx` | Card designs | ✅ Complete |
+| `/admin/inbox` | `app/admin/inbox/page.tsx` | Notifications | ✅ Complete |
 
 **Layout:** `app/admin/layout.tsx` - Sidebar navigation with logout
 
