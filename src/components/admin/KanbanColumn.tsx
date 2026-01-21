@@ -33,7 +33,7 @@ export function KanbanColumn({ column, orders, onOrderClick }: KanbanColumnProps
     return (
         <div
             ref={setNodeRef}
-            className="bg-secondary/30 rounded-lg p-2 flex flex-col gap-2 min-w-[300px] w-[300px] h-full max-h-full"
+            className="bg-secondary/30 rounded-lg p-2 flex flex-col gap-2 min-w-[300px] w-[300px]"
         >
             <div className="flex items-center justify-between p-2 font-semibold">
                 <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ export function KanbanColumn({ column, orders, onOrderClick }: KanbanColumnProps
                 </span>
             </div>
 
-            <div className="flex-1 overflow-y-auto min-h-[100px] pr-1 scrollbar-thin scrollbar-thumb-secondary">
+            <div className="min-h-[100px] flex flex-col gap-2">
                 <SortableContext items={ordersIds}>
                     {orders.map((order) => (
                         <OrderCard

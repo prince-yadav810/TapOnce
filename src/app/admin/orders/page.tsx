@@ -115,7 +115,7 @@ async function handleOrderReject(orderId: string, reason: string) {
 
 export default function AdminOrdersPage() {
     return (
-        <div className="flex flex-col h-[calc(100vh-4rem)] p-4 md:p-6 overflow-hidden">
+        <div className="flex flex-col p-4 md:p-6">
             <div className="flex items-center justify-between mb-4">
                 <div>
                     <h1 className="text-2xl font-bold tracking-tight">Order Board</h1>
@@ -123,7 +123,7 @@ export default function AdminOrdersPage() {
                 </div>
             </div>
 
-            <div className="flex-1 overflow-auto bg-muted/10 rounded-xl border p-4">
+            <div className="bg-muted/10 rounded-xl border p-4">
                 <KanbanBoard
                     initialColumns={columns}
                     initialOrders={initialOrders}

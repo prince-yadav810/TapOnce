@@ -27,6 +27,15 @@ import { KanbanColumn } from './KanbanColumn';
 import { OrderCard } from './OrderCard';
 import { OrderDetailModal } from './OrderDetailModal';
 import { OrderFilters } from './OrderFilters';
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
 
 interface Agent {
     id: string;
@@ -91,6 +100,12 @@ export function KanbanBoard({
     const [selectedOrder, setSelectedOrder] = useState<KanbanOrder | null>(null);
     const [modalOpen, setModalOpen] = useState(false);
 
+    // Confirmation Modal State
+    const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+    const [pendingDrag, setPendingDrag] = useState<{ activeId: string, overId: string, originalStatus: OrderStatus } | null>(null);
+    // Track original status to compare against final drop column
+    const [startStatus, setStartStatus] = useState<OrderStatus | null>(null);
+
     // Filter state
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedAgent, setSelectedAgent] = useState<string | null>(null);
@@ -131,8 +146,9 @@ export function KanbanBoard({
 
     function onDragStart(event: DragStartEvent) {
         if (event.active.data.current?.type === 'Order') {
-            setActiveOrder(event.active.data.current.order);
-            return;
+            const order = event.active.data.current.order;
+            setActiveOrder(order);
+            setStartStatus(order.status); // Save original status
         }
     }
 
@@ -158,6 +174,7 @@ export function KanbanBoard({
                 const overIndex = orders.findIndex((t) => t.id === overId);
 
                 if (orders[activeIndex].status !== orders[overIndex].status) {
+                    // Update status for visual feedback only
                     orders[activeIndex].status = orders[overIndex].status;
                     return arrayMove(orders, activeIndex, overIndex - 1);
                 }
@@ -171,6 +188,7 @@ export function KanbanBoard({
             setOrders((orders) => {
                 const activeIndex = orders.findIndex((t) => t.id === activeId);
                 if (orders[activeIndex].status !== overId) {
+                    // Update status for visual feedback only
                     orders[activeIndex].status = overId as OrderStatus;
                     return arrayMove(orders, activeIndex, activeIndex);
                 }
@@ -183,23 +201,60 @@ export function KanbanBoard({
         const { active, over } = event;
         setActiveOrder(null);
 
-        if (!over) return;
+        if (!over || !startStatus) return;
 
-        const activeId = active.id;
-        const overId = over.id;
+        const activeId = active.id as string;
+        const overId = over.id as string;
 
-        if (activeId === overId) return;
-
-        const isActiveAOrder = active.data.current?.type === 'Order';
-        const isOverAColumn = over.data.current?.type === 'Column';
-
-        if (isActiveAOrder && isOverAColumn) {
-            // Sync with backend
-            if (onOrderUpdate) {
-                await onOrderUpdate(activeId as string, overId as OrderStatus);
-            }
+        // Determine target status
+        let targetStatus: OrderStatus;
+        if (over.data.current?.type === 'Column') {
+            targetStatus = overId as OrderStatus;
+        } else if (over.data.current?.type === 'Order') {
+            targetStatus = over.data.current.order.status;
+        } else {
+            return;
         }
+
+        // Compare original status with target status
+        if (startStatus === targetStatus) {
+            setStartStatus(null);
+            return; // No status change, just reordering within same column
+        }
+
+        // Status changed: Trigger Confirmation
+        setPendingDrag({
+            activeId,
+            overId: targetStatus,
+            originalStatus: startStatus
+        });
+        setConfirmModalOpen(true);
+        // Do NOT nullify startStatus yet; needed for revert if cancelled
     }
+
+    const handleConfirmDrag = async () => {
+        if (pendingDrag && onOrderUpdate) {
+            await onOrderUpdate(pendingDrag.activeId, pendingDrag.overId as OrderStatus);
+        }
+        setConfirmModalOpen(false);
+        setPendingDrag(null);
+        setStartStatus(null);
+    };
+
+    const handleCancelDrag = () => {
+        if (pendingDrag && startStatus) {
+            // Revert the order status in local state
+            setOrders(orders => orders.map(o => {
+                if (o.id === pendingDrag.activeId) {
+                    return { ...o, status: startStatus };
+                }
+                return o;
+            }));
+        }
+        setConfirmModalOpen(false);
+        setPendingDrag(null);
+        setStartStatus(null);
+    };
 
     const handleOrderClick = (order: KanbanOrder) => {
         setSelectedOrder(order);
@@ -235,8 +290,11 @@ export function KanbanBoard({
     const [mounted, setMounted] = useState(false);
     useEffect(() => setMounted(true), []);
 
+    // Get column titles for confirmation message
+    const getColumnTitle = (id: string) => columns.find(c => c.id === id)?.title || id;
+
     return (
-        <div className="flex flex-col h-full gap-4">
+        <div className="flex flex-col gap-4">
             {/* Filters */}
             <OrderFilters
                 searchQuery={searchQuery}
@@ -248,7 +306,7 @@ export function KanbanBoard({
             />
 
             {/* Kanban Board */}
-            <div className="flex flex-1 overflow-x-auto overflow-y-hidden gap-4 pb-4">
+            <div className="flex overflow-x-auto gap-4 pb-4">
                 <DndContext
                     sensors={sensors}
                     collisionDetection={closestCorners}
@@ -288,6 +346,24 @@ export function KanbanBoard({
                 onApprove={handleApprove}
                 onReject={handleReject}
             />
+
+            {/* Drag Confirmation Modal */}
+            <Dialog open={confirmModalOpen} onOpenChange={(open) => !open && handleCancelDrag()}>
+                <DialogContent>
+                    <DialogHeader>
+                        <DialogTitle>Move Order?</DialogTitle>
+                        <DialogDescription>
+                            Are you sure you want to move this order from{' '}
+                            <span className="font-semibold text-gray-900">{pendingDrag ? getColumnTitle(pendingDrag.originalStatus) : '...'}</span> to{' '}
+                            <span className="font-semibold text-gray-900">{pendingDrag ? getColumnTitle(pendingDrag.overId) : '...'}</span>?
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={handleCancelDrag}>Cancel</Button>
+                        <Button onClick={handleConfirmDrag}>Confirm Move</Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </div>
     );
 }
