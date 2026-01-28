@@ -13,33 +13,10 @@ import { AgentFilters } from '@/components/admin/AgentFilters'
 import { AgentDetailModal } from '@/components/admin/AgentDetailModal'
 import { CreateAgentModal } from '@/components/admin/CreateAgentModal'
 import { PayoutModal } from '@/components/admin/PayoutModal'
+import { PendingApplications } from '@/components/admin/PendingApplications'
 import { Agent, AgentStatus, CreateAgentPayload, PayoutPayload } from '@/types/agent'
-import { getAgents, updateAgentStatus, processPayout, AgentListItem } from '@/lib/services/agents'
-import { Users, IndianRupee, TrendingUp, Wallet } from 'lucide-react'
-import { useRouter } from 'next/navigation'
-
-// Transform AgentListItem to Agent type
-function transformAgent(item: AgentListItem): Agent {
-    return {
-        id: item.id,
-        profileId: item.profileId,
-        fullName: item.fullName,
-        email: item.email || '',
-        phone: item.phone || '',
-        referralCode: item.referralCode,
-        city: item.city || undefined,
-        upiId: item.upiId || undefined,
-        bankAccount: item.bankAccount || undefined,
-        bankIfsc: item.bankIfsc || undefined,
-        baseCommission: item.baseCommission,
-        totalSales: item.totalSales,
-        totalEarnings: item.totalEarnings,
-        availableBalance: item.availableBalance,
-        status: item.status,
-        createdAt: item.createdAt,
-        updatedAt: item.createdAt
-    }
-}
+import { AgentApplication } from '@/types/agent-application'
+import { Users, IndianRupee, TrendingUp, Wallet, Loader2, RefreshCw } from 'lucide-react'
 
 function formatCurrency(amount: number): string {
     return new Intl.NumberFormat('en-IN', {
@@ -50,10 +27,9 @@ function formatCurrency(amount: number): string {
 }
 
 export default function AdminAgentsPage() {
-    const router = useRouter()
     const [agents, setAgents] = useState<Agent[]>([])
-    const [total, setTotal] = useState(0)
     const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
     const [searchQuery, setSearchQuery] = useState('')
     const [selectedStatus, setSelectedStatus] = useState<AgentStatus | null>(null)
     const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null)
@@ -62,29 +38,63 @@ export default function AdminAgentsPage() {
     const [payoutAgent, setPayoutAgent] = useState<Agent | null>(null)
     const [payoutModalOpen, setPayoutModalOpen] = useState(false)
 
-    // Fetch agents from Supabase
-    useEffect(() => {
-        async function fetchAgents() {
-            setLoading(true)
-            const response = await getAgents({
-                search: searchQuery || undefined,
-                status: selectedStatus || undefined
+    // Fetch agents from API on mount
+    const fetchAgents = async () => {
+        setLoading(true)
+        setError(null)
+        try {
+            const response = await fetch('/api/admin/agents', {
+                credentials: 'include'
             })
-            setAgents(response.agents.map(transformAgent))
-            setTotal(response.total)
+            if (response.ok) {
+                const data = await response.json()
+                setAgents(data.agents || [])
+            } else {
+                setError('Failed to fetch agents')
+            }
+        } catch (err) {
+            console.error('Error fetching agents:', err)
+            setError('Error loading agents')
+        } finally {
             setLoading(false)
         }
+    }
+
+    useEffect(() => {
         fetchAgents()
-    }, [searchQuery, selectedStatus])
+    }, [])
+
+    // Filtered agents based on search and status
+    const filteredAgents = useMemo(() => {
+        let result = agents
+
+        // Search filter
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase()
+            result = result.filter(a =>
+                a.fullName.toLowerCase().includes(query) ||
+                a.email.toLowerCase().includes(query) ||
+                a.referralCode.toLowerCase().includes(query) ||
+                a.phone.includes(query)
+            )
+        }
+
+        // Status filter
+        if (selectedStatus) {
+            result = result.filter(a => a.status === selectedStatus)
+        }
+
+        return result
+    }, [agents, searchQuery, selectedStatus])
 
     // Stats
     const stats = useMemo(() => ({
-        total: total,
+        total: agents.length,
         active: agents.filter(a => a.status === 'active').length,
         totalSales: agents.reduce((sum, a) => sum + a.totalSales, 0),
         totalOwed: agents.reduce((sum, a) => sum + a.availableBalance, 0),
         totalEarnings: agents.reduce((sum, a) => sum + a.totalEarnings, 0)
-    }), [agents, total])
+    }), [agents])
 
     const handleViewAgent = (agent: Agent) => {
         setSelectedAgent(agent)
@@ -105,44 +115,97 @@ export default function AdminAgentsPage() {
     const handleToggleStatus = async (agent: Agent) => {
         const newStatus: AgentStatus = agent.status === 'active' ? 'inactive' : 'active'
 
-        const result = await updateAgentStatus(agent.id, newStatus)
+        try {
+            const response = await fetch(`/api/admin/agents/${agent.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ status: newStatus })
+            })
 
-        if (result.success) {
-            setAgents(prev => prev.map(a =>
-                a.id === agent.id ? { ...a, status: newStatus } : a
-            ))
-            setDetailModalOpen(false)
-        } else {
-            console.error('Failed to update agent status:', result.error)
+            if (response.ok) {
+                setAgents(prev => prev.map(a =>
+                    a.id === agent.id ? { ...a, status: newStatus } : a
+                ))
+                setDetailModalOpen(false)
+            } else {
+                const errorData = await response.json()
+                console.error('Failed to update agent status:', errorData.error)
+                alert('Failed to update agent status')
+            }
+        } catch (err) {
+            console.error('Error updating agent status:', err)
+            alert('Error updating agent status')
         }
     }
 
     const handleCreateAgent = async (data: CreateAgentPayload) => {
-        // TODO: Implement createAgent service function
+        // TODO: Implement createAgent API call
         console.log('Create agent:', data)
-        // For now, close modal - real implementation would call Supabase
         setCreateModalOpen(false)
+        // After real implementation, call fetchAgents()
     }
 
     const handlePayout = async (agentId: string, data: PayoutPayload) => {
-        const result = await processPayout(agentId, data)
+        try {
+            const response = await fetch(`/api/admin/payouts`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    agentId,
+                    amount: data.amount,
+                    method: data.paymentMethod,
+                    notes: data.adminNotes
+                })
+            })
 
-        if (result.success) {
-            // Update local state
-            setAgents(prev => prev.map(a =>
-                a.id === agentId
-                    ? { ...a, availableBalance: a.availableBalance - data.amount }
-                    : a
-            ))
-            setPayoutModalOpen(false)
-        } else {
-            console.error('Failed to process payout:', result.error)
+            if (response.ok) {
+                // Update local state
+                setAgents(prev => prev.map(a =>
+                    a.id === agentId
+                        ? { ...a, availableBalance: a.availableBalance - data.amount }
+                        : a
+                ))
+                setPayoutModalOpen(false)
+            } else {
+                const errorData = await response.json()
+                console.error('Failed to process payout:', errorData.error)
+                alert('Failed to process payout')
+            }
+        } catch (err) {
+            console.error('Error processing payout:', err)
+            alert('Error processing payout')
         }
     }
 
     const clearFilters = () => {
         setSearchQuery('')
         setSelectedStatus(null)
+    }
+
+    if (loading) {
+        return (
+            <div className="flex items-center justify-center h-[50vh]">
+                <Loader2 className="w-8 h-8 animate-spin text-muted-foreground" />
+                <span className="ml-2 text-muted-foreground">Loading agents...</span>
+            </div>
+        )
+    }
+
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center h-[50vh]">
+                <p className="text-lg text-red-500 mb-4">{error}</p>
+                <button
+                    onClick={fetchAgents}
+                    className="flex items-center gap-2 px-4 py-2 bg-primary text-white rounded-lg"
+                >
+                    <RefreshCw className="w-4 h-4" />
+                    Retry
+                </button>
+            </div>
+        )
     }
 
     return (
@@ -155,6 +218,13 @@ export default function AdminAgentsPage() {
                         Manage marketing agents and commissions
                     </p>
                 </div>
+                <button
+                    onClick={fetchAgents}
+                    className="flex items-center gap-2 px-3 py-1.5 text-sm border rounded-lg hover:bg-muted"
+                >
+                    <RefreshCw className="w-4 h-4" />
+                    Refresh
+                </button>
             </div>
 
             {/* Stats Cards */}
@@ -209,24 +279,30 @@ export default function AdminAgentsPage() {
 
             {/* Table */}
             <div className="flex-1 overflow-auto">
-                {loading ? (
-                    <div className="flex items-center justify-center h-64">
-                        <div className="text-muted-foreground">Loading agents...</div>
-                    </div>
-                ) : (
-                    <AgentTable
-                        agents={agents}
-                        onViewAgent={handleViewAgent}
-                        onEditAgent={handleEditAgent}
-                        onPayAgent={handlePayAgent}
-                        onToggleStatus={handleToggleStatus}
-                    />
-                )}
+                <AgentTable
+                    agents={filteredAgents}
+                    onViewAgent={handleViewAgent}
+                    onEditAgent={handleEditAgent}
+                    onPayAgent={handlePayAgent}
+                    onToggleStatus={handleToggleStatus}
+                />
             </div>
 
             {/* Results count */}
             <div className="mt-4 text-sm text-muted-foreground">
-                Showing {agents.length} of {total} agents
+                Showing {filteredAgents.length} of {agents.length} agents
+            </div>
+
+            {/* Pending Applications Section */}
+            <div className="mt-6 bg-white border rounded-lg p-4">
+                <PendingApplications
+                    onApprove={(application: AgentApplication) => {
+                        // Open create modal pre-filled with application data
+                        setCreateModalOpen(true)
+                        // Note: You could pre-fill the create form here
+                        console.log('Approve application:', application)
+                    }}
+                />
             </div>
 
             {/* Modals */}

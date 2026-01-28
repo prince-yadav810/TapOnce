@@ -110,6 +110,9 @@ export default function OrderPage() {
                                 name={name}
                                 title={title}
                                 niche={template?.professionId || "corporate"}
+                                templateId={template?.id}
+                                templateName={template?.name}
+                                logoUrl={logoUrl}
                             />
                         </div>
                     </div>

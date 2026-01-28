@@ -15,7 +15,7 @@ export default function StickyMobileCTA() {
             className="fixed bottom-0 left-0 right-0 z-50 p-4 bg-gradient-to-t from-black via-black/95 to-transparent md:hidden"
         >
             <Link
-                href="/register"
+                href="/order"
                 className="flex items-center justify-center gap-3 w-full py-4 bg-white text-black font-bold rounded-full text-lg shadow-lg shadow-white/10"
             >
                 Get Your Card

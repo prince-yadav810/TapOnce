@@ -8,6 +8,9 @@
 import { createClient } from '@/lib/supabase/client'
 import { Agent, AgentStatus, CreateAgentPayload, PayoutPayload, CommissionLiability } from '@/types/agent'
 
+// Re-export Agent type for convenience
+export type { Agent } from '@/types/agent'
+
 export interface AgentListItem {
     id: string
     profileId: string

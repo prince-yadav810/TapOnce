@@ -120,7 +120,7 @@ export default function ShowroomHero() {
                         className="flex flex-wrap gap-4"
                     >
                         <Link
-                            href="/login?redirect=/agent/orders/new"
+                            href="/order"
                             className="group flex items-center gap-3 px-8 py-4 bg-white text-black rounded-full font-bold hover:scale-105 transition-all active:scale-95"
                         >
                             Design Your Card

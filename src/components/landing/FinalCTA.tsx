@@ -47,7 +47,7 @@ export default function FinalCTA() {
                         className="inline-block mb-12"
                     >
                         <Link
-                            href="/login?redirect=/agent/orders/new"
+                            href="/order"
                             className="group relative inline-flex items-center gap-3 bg-white text-black px-12 py-6 rounded-full text-xl font-bold transition-all hover:bg-zinc-100"
                         >
                             Get Your Card Now

@@ -19,8 +19,8 @@ export default function Navbar() {
     }, [scrollY])
 
     const navLinks = [
-        { name: "Shop", href: "#collection" },
-        { name: "Enterprise", href: "#business" },
+        { name: "Shop", href: "/order" },
+        { name: "Become Agent", href: "/become-agent" },
         { name: "About", href: "#features" },
     ]
 
@@ -73,7 +73,7 @@ export default function Navbar() {
                         Login
                     </Link>
                     <Link
-                        href="/register"
+                        href="/order"
                         className={cn(
                             "px-5 py-2 text-sm font-medium rounded-full transition-all hover:scale-105 active:scale-95",
                             isScrolled
@@ -118,7 +118,7 @@ export default function Navbar() {
                             Login
                         </Link>
                         <Link
-                            href="/register"
+                            href="/order"
                             className="block px-4 py-3 text-sm font-medium text-center bg-white text-black rounded-xl hover:bg-zinc-200"
                         >
                             Get Custom Card
