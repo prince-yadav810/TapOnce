@@ -155,8 +155,8 @@ export default function AdminAgentsPage() {
                 body: JSON.stringify({
                     agentId,
                     amount: data.amount,
-                    method: data.method,
-                    notes: data.notes
+                    method: data.paymentMethod,
+                    notes: data.adminNotes
                 })
             })
 
