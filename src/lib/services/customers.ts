@@ -182,10 +182,14 @@ export async function getCustomerBySlug(slug: string): Promise<Customer | null> 
         `)
         .eq('slug', slug)
         .eq('status', 'active')
-        .single()
+        .maybeSingle()
 
-    if (error || !data) {
+    if (error) {
         console.error('Error fetching customer by slug:', error)
+        return null
+    }
+
+    if (!data) {
         return null
     }
 
